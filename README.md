@@ -1,4 +1,4 @@
-# Mike's WebChestra - Documentation
+# Mike's WebChestra
 
 A pure JS browser-based music mixer inspired by Incredibox and Sprunki Beats. Click character icons to layer instrumental loops and create your own beat. Uses Web Audio API - no external libraries needed.
 
