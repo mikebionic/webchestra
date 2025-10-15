@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beat Mixer</title>
+    <title>Mike's WebChestra</title>
     <style>
         * {
             margin: 0;
@@ -89,6 +89,13 @@
             display: flex;
             gap: 20px;
             margin-top: 20px;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 20px;
         }
         
         button {
@@ -111,6 +118,42 @@
             box-shadow: 0 5px 20px rgba(255, 65, 108, 0.4);
         }
         
+        #mouthBtn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            font-size: 2em;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #mouthBtn:hover {
+            transform: translateY(-2px) scale(1.1);
+            box-shadow: 0 5px 30px rgba(240, 147, 251, 0.6);
+        }
+        
+        .media-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .media-container img {
+            max-width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 30px rgba(0, 255, 255, 0.3);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
         .sound-type-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .sound-type-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
         .sound-type-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
@@ -120,8 +163,14 @@
     </style>
 </head>
 <body>
-    <h1>🎵 Beat Mixer 🎵</h1>
+    <h1>🎵 Mike's WebChestra 🎵</h1>
     
+    <div class="controls">
+        <div class="button-row">
+            <button id="resetBtn">Reset All</button>
+        </div>
+    </div>
+
     <div class="instructions">
         Click on characters to layer different sounds and create your mix!
     </div>
@@ -129,8 +178,18 @@
     <div class="stage" id="stage"></div>
     
     <div class="controls">
-        <button id="resetBtn">Reset All</button>
+        <div class="button-row">
+            <h2>Don't click this sexy button:</h2>
+        </div>
+        <button id="mouthBtn">👄</button>
     </div>
+    
+    <div id="mediaContainer" class="media-container hidden">
+        <img id="gifImage" src="shuffling.gif" alt="Shuffling">
+        <img id="qrImage" src="qr-code.png" alt="QR Code">
+    </div>
+    
+    <audio id="audioPlayer" src="da.mp3"></audio>
 
     <script>
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -169,24 +228,24 @@
 // D2 → 73.42 Hz
 
             { 
-                emoji: '🥁', 
+                emoji: '🪘', 
                 name: 'Kick', 
                 type: 2, 
-                freq: 100, // Lower frequency for punchier kick
+                freq: 100,
                 pattern: [1,0,0,1,0,1,0,0],
                 isDrum: true
             },
             { 
-                emoji: '🎺', 
+                emoji: '🥁', 
                 name: 'Snare', 
                 type: 3, 
                 freq: 30, 
                 pattern: [0,0,1,0,0,0,1,0],
                 isDrum: true,
-                useNoise: true // Add noise for snare
+                useNoise: true
             },
             { 
-                emoji: '🎤', 
+                emoji: '🪇', 
                 name: 'Hi-Hat', 
                 type: 4, 
                 freq: 8000, 
@@ -194,19 +253,11 @@
                 isDrum: true,
                 useNoise: true
             },
-            { 
-                emoji: '🎤', 
-                name: 'Synth', 
-                type: 5, 
-                notes: [523.25, 587.33, 659.25, 783.99], // C5, D5, E5, G5
-                pattern: [0,0,1,0,2,0,3,0],
-                notePattern: true
-            },
             {
-                emoji: '🎧',
+                emoji: '🎹',
                 name: 'Lead',
                 type: 6,
-                notes: [392.00, 587.33, 554.37, 466.16, 523.25, 739.99, 622.25, 880.00, 784.00], // G4, D5, C#5, Bb4, C5, F#5, Eb4, A5, G5
+                notes: [392.00, 587.33, 554.37, 466.16, 523.25, 739.99, 622.25, 880.00, 784.00],
                 pattern: [1,2,0,1,3,2,3,4, 1,2,0,1,3,2,3,4, 1,2,0,1,3,2,3,4, 1,2,0,1,3,2,3,4, 5,9,0,5,6,9,6,7, 5,9,0,5,6,9,6,7, 2,8,0,2,6,2,0,5,0],
                 notePattern: true
             }
@@ -245,12 +296,10 @@
             const sound = sounds[index];
             
             if (sound.isDrum) {
-                // For drums, create the oscillator normally
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
                 
                 if (sound.useNoise) {
-                    // Use noise for snare/hihat
                     const bufferSize = audioContext.sampleRate * 0.5;
                     const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
                     const output = buffer.getChannelData(0);
@@ -273,7 +322,6 @@
                     noise.start();
                     activeOscillators[index] = noise;
                 } else {
-                    // Kick drum
                     oscillator.type = 'sine';
                     oscillator.frequency.setValueAtTime(sound.freq, audioContext.currentTime);
                     
@@ -292,7 +340,6 @@
                 
                 gainNodes[index] = gainNode;
             } else {
-                // For melodic instruments, store the notes
                 activeOscillators[index] = { notes: sound.notes, type: 'melodic' };
                 gainNodes[index] = null;
             }
@@ -307,7 +354,6 @@
                 const sound = sounds[index];
                 
                 if (sound.isDrum) {
-                    // For drums with gainNode
                     const gainNode = gainNodes[index];
                     if (gainNode) {
                         gainNode.gain.setValueAtTime(gainNode.gain.value, audioContext.currentTime);
@@ -326,7 +372,6 @@
                         }, 100);
                     }
                 } else {
-                    // For melodic instruments, just remove from active list
                     delete activeOscillators[index];
                     delete gainNodes[index];
                     
@@ -346,7 +391,6 @@
                     const sound = sounds[index];
                     
                     if (sound.notePattern) {
-                        // Play melodic notes
                         const noteIndex = sound.pattern[currentBeat % 64];
                         if (noteIndex > 0) {
                             const osc = audioContext.createOscillator();
@@ -364,23 +408,19 @@
                             osc.stop(audioContext.currentTime + 0.4);
                         }
                     } else {
-                        // Play drum sounds
                         const gainNode = gainNodes[index];
                         if (gainNode && sound.pattern[currentBeat % 8]) {
                             gainNode.gain.cancelScheduledValues(audioContext.currentTime);
                             
                             if (index === 1) {
-                                // Kick - punchier envelope
                                 gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
                                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
                                 
-                                // Pitch drop for kick
                                 if (activeOscillators[index].frequency) {
                                     activeOscillators[index].frequency.setValueAtTime(150, audioContext.currentTime);
                                     activeOscillators[index].frequency.exponentialRampToValueAtTime(55, audioContext.currentTime + 0.1);
                                 }
                             } else {
-                                // Snare and hihat
                                 gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
                                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
                             }
@@ -415,6 +455,20 @@
         });
         
         document.getElementById('resetBtn').addEventListener('click', resetAll);
+        
+        const mouthBtn = document.getElementById('mouthBtn');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const mediaContainer = document.getElementById('mediaContainer');
+        
+        mouthBtn.addEventListener('click', () => {
+            audioPlayer.currentTime = 0;
+            audioPlayer.play();
+            const allActive = sounds.every((_, index) => activeOscillators[index]);
+            
+            if (allActive) {
+                mediaContainer.classList.remove('hidden');
+            }
+        });
     </script>
 </body>
 </html>
